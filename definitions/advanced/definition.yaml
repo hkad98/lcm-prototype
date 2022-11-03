@@ -1,0 +1,81 @@
+data_sources:
+  - id: "demo-test-ds"
+    name: "demo-test-ds"
+    type: "POSTGRESQL"
+    schema: "demo"
+
+    url: "jdbc:postgresql://localhost:5432/demo"
+    username: "demouser"
+    pdm: "my_custom_pdm"
+
+
+workspaces:
+  - name: "E-commerce Parent Tomas Gabik"
+    model:
+        adm_name: "my_custom_adm"
+        ldm_name: "my_custom_ldm"
+    workspace_data_filters:
+      column_names:
+        - "wdf__region"
+    children:
+      - name: "E-commerce Merchant Midwest Tomas Gabik"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - Midwest
+      - name: "E-commerce Merchant Northeast Tomas Gabik"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - Northeast
+      - name: "E-commerce Merchant South Tomas Gabik"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - South
+  - name: "E-commerce Parent Petr Olmer"
+    model:
+        adm_name: "my_custom_adm"
+        ldm_name: "my_custom_ldm"
+    workspace_data_filters:
+      column_names:
+        - "wdf__region"
+    children:
+      - name: "E-commerce Merchant Midwest Petr Olmer"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - Midwest
+      - name: "E-commerce Merchant Northeast Petr Olmer"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - Northeast
+      - name: "E-commerce Merchant South Petr Olmer"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - South
+  - name: "E-commerce Parent Jacques Sham"
+    model:
+      adm_name: "my_custom_adm"
+      ldm_name: "my_custom_ldm"
+    workspace_data_filters:
+      column_names:
+        - "wdf__region"
+    children:
+      - name: "E-commerce Merchant Midwest Jacques Sham"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - Midwest
+      - name: "E-commerce Merchant Northeast Jacques Sham"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - Northeast
+      - name: "E-commerce Merchant South Jacques Sham"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - South

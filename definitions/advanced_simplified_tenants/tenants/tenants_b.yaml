@@ -1,0 +1,15 @@
+- name: "E-commerce Merchant PO Midwest"
+  workspace_data_filters_settings:
+    - column_name: "wdf__region"
+      filter_values:
+        - Midwest
+- name: "E-commerce Merchant PO Northeast"
+  workspace_data_filters_settings:
+    - column_name: "wdf__region"
+      filter_values:
+        - Northeast
+- name: "E-commerce Merchant PO South"
+  workspace_data_filters_settings:
+    - column_name: "wdf__region"
+      filter_values:
+        - South

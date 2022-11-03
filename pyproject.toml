@@ -1,0 +1,9 @@
+[tool.black]
+line-length = 120
+
+[tool.isort]
+# make isort setup compatible with black
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+line_length = 120

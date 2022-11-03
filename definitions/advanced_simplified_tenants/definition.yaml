@@ -1,0 +1,24 @@
+data_sources:
+  - id: "demo-test-ds"
+    name: "demo-test-ds"
+    type: "POSTGRESQL"
+    schema: "demo"
+
+    url: "jdbc:postgresql://localhost:5432/demo"
+    username: "demouser"
+    pdm: "my_custom_pdm"
+
+
+workspaces:
+  - name: "Root workspace"
+    model:
+      adm_name: "my_custom_adm"
+      ldm_name: "my_custom_ldm"
+    children:
+      {%- for combination in combinations %}
+      - name: "E-commerce Parent {{ combination.name }}"
+        tenants_name: {{ combination.tenant }}
+        workspace_data_filters:
+          column_names:
+            - "wdf__region"
+      {%- endfor %}

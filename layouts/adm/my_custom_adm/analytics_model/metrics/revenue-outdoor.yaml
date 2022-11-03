@@ -1,0 +1,5 @@
+content:
+  format: $#,##0
+  maql: SELECT {metric/revenue} WHERE {label/products.category} IN ("Outdoor")
+id: revenue-outdoor
+title: Revenue (Outdoor)

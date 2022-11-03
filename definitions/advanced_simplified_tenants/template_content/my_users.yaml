@@ -1,0 +1,7 @@
+combinations:
+  - name: Tomas Gabik
+    tenant: "tenants_a.yaml"
+  - name: Petr Olmer
+    tenant: "tenants_b.yaml"
+  - name: Jacques Sham
+    tenant: "tenants_c.yaml"

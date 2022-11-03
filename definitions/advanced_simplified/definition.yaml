@@ -1,0 +1,29 @@
+data_sources:
+  - id: "demo-test-ds"
+    name: "demo-test-ds"
+    type: "POSTGRESQL"
+    schema: "demo"
+
+    url: "jdbc:postgresql://localhost:5432/demo"
+    username: "demouser"
+    pdm: "my_custom_pdm"
+
+
+workspaces:
+  {%- for user in users %}
+  - name: "E-commerce Parent {{ user }}"
+    model:
+        adm_name: "my_custom_adm"
+        ldm_name: "my_custom_ldm"
+    workspace_data_filters:
+      column_names:
+        - "wdf__region"
+    children:
+      {%- for filter_value in filter_values %}
+      - name: "E-commerce Merchant {{ filter_value }} {{ user }}"
+        workspace_data_filters_settings:
+          - column_name: "wdf__region"
+            filter_values:
+              - {{ filter_value }}
+      {%- endfor %}
+  {%- endfor %}

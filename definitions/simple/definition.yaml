@@ -1,0 +1,23 @@
+data_sources:
+  - id: "xyz"
+    name: "Rings of power DS"
+    type: "POSTGRESQL"
+    schema: "demo"
+
+    url: "jdbc:postgresql://localhost:5432/demo"
+    username: "demouser"
+    pdm: "my_custom_pdm"
+
+workspaces:
+  - name: "One root rules them all"
+    model:
+        adm_name: "my_custom_adm"
+        ldm_name: "my_custom_ldm"
+        data_source_id: "xyz"
+    children:
+        - name: "Three rings for Elves"
+          tenants_name: tenants_a.yaml
+        - name: "Seven rings for Dwarves"
+          tenants_name: tenants_b.yaml
+        - name: "Nine rings for Men"
+          tenants_name: tenants_c.yaml
