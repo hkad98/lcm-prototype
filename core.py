@@ -63,6 +63,25 @@ class Hierarchy(Base):
             workspace_data_filters.extend(workspace_data_filters_temp)
         return CatalogDeclarativeWorkspaceDataFilters(workspace_data_filters=workspace_data_filters)
 
+    def fetch_specific_workspace_data_filters(self, workspace_id: str) -> CatalogDeclarativeWorkspaceDataFilters:
+        """
+        FIX ME!!!
+        This is not optimal
+        """
+        workspace_data_filters = []
+        for workspace in self.workspaces:
+            if workspace.id == workspace_id:
+                workspace_data_filters_temp = workspace.fetch_workspace_data_filters()
+                data_filters_settings = workspace.fetch_workspace_data_filters_settings()
+                for wdf in workspace_data_filters_temp:
+                    filtered_settings = data_filters_settings.get(wdf.column_name, [])
+                    data_filter_workspace = self.get_workspace(wdf.workspace.id)
+                    for data_filter_setting in filtered_settings:
+                        if data_filter_workspace.get_workspace(data_filter_setting.workspace.id):
+                            wdf.workspace_data_filter_settings.append(data_filter_setting)
+                workspace_data_filters.extend(workspace_data_filters_temp)
+        return CatalogDeclarativeWorkspaceDataFilters(workspace_data_filters=workspace_data_filters)
+
     def fetch_all_workspaces(self) -> chain[CatalogDeclarativeWorkspace]:
         """
         There can be a lot of workspaces and for that reason it is reasonable to return chain of workspaces.
@@ -110,10 +129,11 @@ class Hierarchy(Base):
         print(f"{'*' * 5} put workspace data filters {'*' * 5}")
         sdk.catalog_workspace.put_declarative_workspace_data_filters(workspace_data_filters=workspace_data_filters)
 
-    def store_workspace_data_filters(self):
-        workspace_data_filters = self.fetch_all_workspace_data_filters()
-        with open("AAA.yaml", "w", encoding="utf-8") as f:
-            yaml.safe_dump(workspace_data_filters.to_dict(), f)
+    def put_specific_workspace_data_filters(self, workspace_id: str):
+        print(f"{'*' * 5} fetching workspace data filters  {workspace_id=} put start {'*' * 5}")
+        workspace_data_filters = self.fetch_specific_workspace_data_filters(workspace_id)
+        print(f"{'*' * 5} put workspace data filters {workspace_id=} {'*' * 5}")
+        sdk.catalog_workspace.put_declarative_workspace_data_filters(workspace_data_filters=workspace_data_filters)
 
     def put_workspaces(self):
         print(f"{'*' * 5} workspace put start {'*' * 5}")
@@ -135,7 +155,7 @@ class Hierarchy(Base):
         self.put_workspaces()
         self.put_workspace_data_filters()
 
-    def put_some(self, workspace_id: str):
+    def put_specific(self, workspace_id: str):
         """
         Put only top level parent and its subtree by workspace_id.
         """
@@ -143,9 +163,4 @@ class Hierarchy(Base):
 
         self.put_data_sources()
         self.put_workspace(workspace_id)
-        # self.put_specific_workspace_data_filters()
-
-
-if __name__ == "__main__":
-    h = Hierarchy.from_definition("simple")
-    h.put_all()
+        self.put_specific_workspace_data_filters(workspace_id)

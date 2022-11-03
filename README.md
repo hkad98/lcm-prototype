@@ -51,7 +51,3 @@ python3 -i core.py
 h = Hierarchy.from_definition("advanced_simplified_tenants")
 h.put_all()
 ```
-
-## TODOs
-
-* doručování do organizací - specifikace TOP level node a doručení jeho children

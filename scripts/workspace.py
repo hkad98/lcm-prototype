@@ -9,6 +9,7 @@ from gooddata_sdk import (
     CatalogDeclarativeModel,
     CatalogDeclarativeWorkspaceDataFilter,
     CatalogDeclarativeWorkspaceDataFilterSetting,
+    CatalogDeclarativeWorkspaceModel,
     CatalogWorkspace,
     CatalogWorkspaceIdentifier,
 )
@@ -37,6 +38,15 @@ class Model(Base):
             if self.data_source_id:
                 for dataset in self.ldm.ldm.datasets:
                     dataset.data_source_table_id.data_source_id = self.data_source_id
+
+    @property
+    def model(self) -> CatalogDeclarativeWorkspaceModel:
+        ldm, adm = None, None
+        if self.ldm:
+            ldm = self.ldm.ldm
+        if self.adm:
+            adm = self.adm.analytics
+        return CatalogDeclarativeWorkspaceModel(ldm=ldm, analytics=adm)
 
 
 @define(auto_attribs=True, kw_only=True)
@@ -119,9 +129,7 @@ class Workspace(Base):
         if self.parent:
             workspace.parent = get_workspace_identifier(self.parent)
         if self.model:
-            # workspace.model = self.model.to_api()
-            # TODO:
-            pass
+            workspace.model = self.model.model
         yield workspace
 
         for child in self.children:
