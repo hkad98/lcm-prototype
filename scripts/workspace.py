@@ -64,14 +64,14 @@ class WorkspaceDataFiltersSettings(Base):
 class Workspace(Base):
     name: str
     id: Optional[str] = field(default=Factory(lambda self: "_".join(self.name.lower().split()), takes_self=True))
-    model: Optional[Model] = field(default=None)
-    workspace_data_filters: Optional[WorkspaceDataFilters] = field(default=None)
-    workspace_data_filters_settings: Optional[list[WorkspaceDataFiltersSettings]] = field(factory=list)
-    children: Optional[list[Workspace]] = field(factory=list)
-    tenants_name: Optional[str] = field(default=None)
-    tenants: Optional[list[Tenants]] = field(factory=list, init=False)
-    parent: Optional[str] = field(default=None, init=False)
-    definition_folder_path: Optional[Path] = field(default=None, init=False, eq=False)
+    model: Optional[Model] = field(default=None, repr=False)
+    workspace_data_filters: Optional[WorkspaceDataFilters] = field(default=None, repr=False)
+    workspace_data_filters_settings: Optional[list[WorkspaceDataFiltersSettings]] = field(factory=list, repr=False)
+    children: Optional[list[Workspace]] = field(factory=list, repr=False)
+    tenants_name: Optional[str] = field(default=None, repr=False)
+    tenants: Optional[list[Tenants]] = field(factory=list, init=False, repr=False)
+    parent: Optional[str] = field(default=None)
+    definition_folder_path: Optional[Path] = field(default=None, init=False, eq=False, repr=False)
 
     def get_workspace(self, workspace_id: str) -> Optional[Workspace]:
         # Check children
@@ -88,6 +88,16 @@ class Workspace(Base):
             if ret:
                 return child
         return None
+
+    def get_workspace_ids(self) -> list[str]:
+        result = [self.id]
+        # Get tenants ids
+        for tenant in self.tenants:
+            result.append(tenant.id)
+        # Get child ids
+        for child in self.children:
+            result.extend(child.get_workspace_ids())
+        return result
 
     def set_definition_folder_path(self, value: Path) -> None:
         self.definition_folder_path = value

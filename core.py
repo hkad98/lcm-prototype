@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import chain
 from pathlib import Path
 
+import networkx as nx
 import yaml
 from attrs import define, field
 from gooddata_sdk import (
@@ -13,13 +14,22 @@ from gooddata_sdk import (
 from gooddata_sdk.catalog.workspace.declarative_model.workspace.workspace import CatalogDeclarativeWorkspace
 from jinja2 import Environment, FileSystemLoader
 
-from config import DEFINITION_FILE, DEFINITIONS_FOLDER, SECRETS_FOLDER, TEMPLATE_CONTENT, Config, clear_sdk
+from config import DEFINITION_FILE, DEFINITIONS_FOLDER, SECRETS_FOLDER, TEMPLATE_CONTENT, Config
 from scripts.base import Base
 from scripts.data_source import DataSource
 from scripts.utils import load_yaml_file, load_yaml_files
 from scripts.workspace import Workspace
 
 sdk = Config.sdk
+
+
+def get_workspace_subtree(workspace_id: str) -> set[str]:
+    workspaces = sdk.catalog_workspace.list_workspaces()
+    edges = [(workspace.id, workspace.parent_id) for workspace in workspaces if workspace.parent_id is not None]
+    G = nx.Graph()
+    G.add_edges_from(edges)
+    g = nx.bfs_tree(G, workspace_id)
+    return set(g.nodes)
 
 
 @define(auto_attribs=True, kw_only=True)
@@ -42,6 +52,19 @@ class Hierarchy(Base):
             ret = workspace.get_workspace(workspace_id)
             if ret:
                 return ret
+
+    def get_workspace_ids(self) -> list[str]:
+        result = []
+        for workspace in self.workspaces:
+            result.extend(workspace.get_workspace_ids())
+        return result
+
+    def get_specific_workspace_ids(self, workspace_id: str) -> list[str]:
+        result = [workspace_id]
+        for workspace in self.workspaces:
+            if workspace.id == workspace_id:
+                result.extend(workspace.get_workspace_ids())
+        return result
 
     def fetch_all_workspace_data_filters(
         self,
@@ -130,10 +153,32 @@ class Hierarchy(Base):
         sdk.catalog_workspace.put_declarative_workspace_data_filters(workspace_data_filters=workspace_data_filters)
 
     def put_specific_workspace_data_filters(self, workspace_id: str):
+        """
+        TODO: this does not work
+        There is a need of entity support for workspace data filters or a patch for layout.
+        """
         print(f"{'*' * 5} fetching workspace data filters  {workspace_id=} put start {'*' * 5}")
         workspace_data_filters = self.fetch_specific_workspace_data_filters(workspace_id)
         print(f"{'*' * 5} put workspace data filters {workspace_id=} {'*' * 5}")
         sdk.catalog_workspace.put_declarative_workspace_data_filters(workspace_data_filters=workspace_data_filters)
+
+    def resolve_existing_workspaces(self):
+        """
+        Delete workspaces that are not part of hierarchy definition.
+        """
+        workspaces = sdk.catalog_workspace.list_workspaces()
+        workspaces_ids = {workspace.id for workspace in workspaces}
+        hierarchy_workspace_ids = set(self.get_workspace_ids())
+        orphans = workspaces_ids - hierarchy_workspace_ids
+        for orphan in orphans:
+            sdk.catalog_workspace.delete_workspace(orphan)
+
+    def resolve_existing_specific_workspaces(self, workspace_id: str):
+        specific_workspace_ids = get_workspace_subtree(workspace_id)
+        hierarchy_workspace_ids = set(self.get_specific_workspace_ids(workspace_id))
+        orphans = specific_workspace_ids - hierarchy_workspace_ids
+        for orphan in orphans:
+            sdk.catalog_workspace.delete_workspace(orphan)
 
     def put_workspaces(self):
         print(f"{'*' * 5} workspace put start {'*' * 5}")
@@ -149,18 +194,21 @@ class Hierarchy(Base):
         print(f"{'*' * 5} workspace {workspace_id=} put end {'*' * 5}")
 
     def put_all(self):
-        clear_sdk()
-
         self.put_data_sources()
         self.put_workspaces()
         self.put_workspace_data_filters()
+        self.resolve_existing_workspaces()
 
     def put_specific(self, workspace_id: str):
         """
         Put only top level parent and its subtree by workspace_id.
         """
-        clear_sdk()
-
         self.put_data_sources()
         self.put_workspace(workspace_id)
         self.put_specific_workspace_data_filters(workspace_id)
+        self.resolve_existing_specific_workspaces(workspace_id)
+
+
+if __name__ == "__main__":
+    h = Hierarchy.from_definition("advanced_simplified")
+    h.put_specific("e-commerce_parent_tomas_gabik")
