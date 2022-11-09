@@ -207,8 +207,3 @@ class Hierarchy(Base):
         self.put_workspace(workspace_id)
         self.put_specific_workspace_data_filters(workspace_id)
         self.resolve_existing_specific_workspaces(workspace_id)
-
-
-if __name__ == "__main__":
-    h = Hierarchy.from_definition("advanced_simplified")
-    h.put_specific("e-commerce_parent_tomas_gabik")

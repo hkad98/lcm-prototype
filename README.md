@@ -2,13 +2,30 @@
 
 ## Set up Python
 ```bash
+# create virtual environment
 make dev
+
+# activate virtual environment
+source .venv/bin/activate
 ```
 
 ## Start up GoodData
 ```bash
 docker run -d -i -t -p 3000:3000 -p 5432:5432 -v gd-volume:/data gooddata/gooddata-cn-ce:dev_latest
 ```
+
+## Clear organization
+
+> **Warning**
+>
+> The command below deletes all your data in your running GD instance. Use carefully.
+
+```bash
+python -i config.py
+>> clear_sdk()
+```
+
+
 
 
 ## Provisioning try out
